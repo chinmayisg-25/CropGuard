@@ -1,0 +1,72 @@
+@import url("https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap");
+
+:root {
+  font-family: "DM Sans", -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
+  color: #17221a;
+  background: #f4f7f3;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+
+  --green-950: #102718;
+  --green-900: #16351f;
+  --green-800: #1d4729;
+  --green-700: #286238;
+  --green-600: #34804a;
+  --green-500: #4d9b5e;
+  --green-100: #e4f2e6;
+  --green-50: #f0f8f1;
+
+  --text-main: #17221a;
+  --text-secondary: #68746b;
+  --text-muted: #8b958d;
+
+  --background: #f4f7f3;
+  --card: #ffffff;
+  --border: #e5ebe5;
+
+  --warning: #d28b25;
+  --warning-bg: #fff6e7;
+  --danger: #c84d4d;
+  --danger-bg: #fff0f0;
+
+  --sidebar-width: 250px;
+  --header-height: 82px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+  background: var(--background);
+  color: var(--text-main);
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+#root {
+  min-height: 100vh;
+}

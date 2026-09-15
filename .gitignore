@@ -1,0 +1,44 @@
+# Dependencies
+node_modules/
+venv/
+.venv/
+ai/venv/
+
+# Python
+__pycache__/
+*.py[cod]
+
+# AI datasets - do not upload large datasets
+ai/prepared_dataset/
+ai/dataset/
+ai/datasets/
+
+# AI training artifacts/checkpoints - keep local
+ai/models/*.pth
+ai/models/*.pt
+ai/models/*.onnx
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Build output
+dist/
+dist-ssr/
+*.local
+
+# Editor/system files
+.vscode/*
+!.vscode/extensions.json
+.idea/
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
