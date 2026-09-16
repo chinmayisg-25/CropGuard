@@ -1,18 +1,28 @@
 import "./App.css";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+
 import Sidebar from "./components/Sidebar";
 import Header from "./components/Header";
+
 import Dashboard from "./pages/Dashboard";
 import Diagnosis from "./pages/Diagnosis";
+import Risk from "./pages/Risk";
+import Weather from "./pages/Weather";
 
 function PlaceholderPage({ title, description }) {
   return (
     <div className="placeholder-page">
       <div className="placeholder-icon">✦</div>
+
       <span className="section-label">CROPGUARD</span>
+
       <h1>{title}</h1>
+
       <p>{description}</p>
-      <span className="coming-badge">Module ready for development</span>
+
+      <span className="coming-badge">
+        Module ready for development
+      </span>
     </div>
   );
 }
@@ -29,16 +39,15 @@ function App() {
           <main className="page-content">
             <Routes>
               <Route path="/" element={<Dashboard />} />
-<Route path="/diagnosis" element={<Diagnosis />} />
+
+              <Route
+                path="/diagnosis"
+                element={<Diagnosis />}
+              />
 
               <Route
                 path="/risk"
-                element={
-                  <PlaceholderPage
-                    title="Check My Risk"
-                    description="Weather, location, crop stage, historical data and community intelligence will combine here to calculate crop-health risk."
-                  />
-                }
+                element={<Risk />}
               />
 
               <Route
@@ -62,14 +71,11 @@ function App() {
               />
 
               <Route
-                path="/weather"
-                element={
-                  <PlaceholderPage
-                    title="Weather"
-                    description="Farm-specific weather intelligence and disease-risk conditions will appear here."
-                  />
-                }
-              />
+  path="/weather"
+  element={<Weather />}
+/>
+                
+            
 
               <Route
                 path="/alerts"

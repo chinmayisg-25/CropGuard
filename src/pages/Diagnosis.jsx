@@ -1,8 +1,8 @@
+import { useState } from "react";
 import "./Diagnosis.css";
-import { useEffect, useRef, useState } from "react";
 import { analyzeCrop } from "../services/diagnosisService";
 
-const crops = [
+const CROPS = [
   "Rice",
   "Wheat",
   "Cotton",
@@ -14,7 +14,7 @@ const crops = [
   "Other",
 ];
 
-const growthStages = [
+const GROWTH_STAGES = [
   "Seedling",
   "Vegetative",
   "Flowering",
@@ -22,111 +22,133 @@ const growthStages = [
   "Maturity",
 ];
 
-function Diagnosis() {
-  const fileInputRef = useRef(null);
+const MAX_IMAGES = 5;
+const MAX_FILE_SIZE = 10 * 1024 * 1024;
 
+function Diagnosis() {
   const [crop, setCrop] = useState("");
   const [growthStage, setGrowthStage] = useState("");
   const [images, setImages] = useState([]);
-  const [qualityResults, setQualityResults] = useState([]);
-
-  const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysisResult, setAnalysisResult] = useState(null);
-  const [analysisError, setAnalysisError] = useState("");
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [error, setError] = useState("");
 
-  useEffect(() => {
-    const results = images.map((image) => {
-      const width = image.width;
-      const height = image.height;
+  const validateImage = (file) => {
+    if (!file.type.startsWith("image/")) {
+      return "Please upload a valid image file.";
+    }
 
-      const resolutionGood = width >= 640 && height >= 480;
-      const sizeGood = image.file.size <= 10 * 1024 * 1024;
+    if (file.size > MAX_FILE_SIZE) {
+      return `${file.name} is larger than 10 MB.`;
+    }
 
-      let status = "good";
-      let message = "Image quality looks suitable for analysis.";
+    return null;
+  };
 
-      if (!resolutionGood) {
-        status = "warning";
-        message = "Low resolution. A clearer image is recommended.";
-      } else if (!sizeGood) {
-        status = "warning";
-        message = "Image is too large. Please use an image below 10 MB.";
-      }
+  const checkImageQuality = (file) => {
+    return new Promise((resolve) => {
+      const image = new Image();
 
-      return {
-        id: image.id,
-        status,
-        message,
+      image.onload = () => {
+        if (image.width < 640 || image.height < 480) {
+          resolve(
+            `${file.name} is too small. Please use an image at least 640 × 480 pixels.`
+          );
+        } else {
+          resolve(null);
+        }
+
+        URL.revokeObjectURL(image.src);
       };
+
+      image.onerror = () => {
+        resolve(`Unable to read ${file.name}.`);
+      };
+
+      image.src = URL.createObjectURL(file);
     });
+  };
 
-    setQualityResults(results);
-  }, [images]);
-
-  function handleImageSelection(event) {
+  const handleImageUpload = async (event) => {
     const selectedFiles = Array.from(event.target.files || []);
 
     if (!selectedFiles.length) {
       return;
     }
 
-    const remainingSlots = 5 - images.length;
-    const filesToProcess = selectedFiles.slice(0, remainingSlots);
+    setError("");
+    setAnalysisResult(null);
 
-    filesToProcess.forEach((file) => {
-      if (!file.type.startsWith("image/")) {
-        return;
+    if (images.length + selectedFiles.length > MAX_IMAGES) {
+      setError(`You can upload a maximum of ${MAX_IMAGES} images.`);
+      return;
+    }
+
+    const newImages = [];
+
+    for (const file of selectedFiles) {
+      const validationError = validateImage(file);
+
+      if (validationError) {
+        setError(validationError);
+        continue;
       }
 
-      const imageUrl = URL.createObjectURL(file);
-      const image = new Image();
+      const qualityError = await checkImageQuality(file);
 
-      image.onload = () => {
-        setImages((currentImages) => [
-          ...currentImages,
-          {
-            id: `${Date.now()}-${Math.random()}`,
-            file,
-            url: imageUrl,
-            width: image.width,
-            height: image.height,
-          },
-        ]);
-      };
+      if (qualityError) {
+        setError(qualityError);
+        continue;
+      }
 
-      image.src = imageUrl;
-    });
+      newImages.push({
+        file,
+        preview: URL.createObjectURL(file),
+      });
+    }
+
+    setImages((previous) => [...previous, ...newImages]);
 
     event.target.value = "";
-  }
+  };
 
-  function removeImage(id) {
-    setImages((currentImages) => {
-      const imageToRemove = currentImages.find((image) => image.id === id);
+  const removeImage = (indexToRemove) => {
+    setImages((previous) => {
+      const imageToRemove = previous[indexToRemove];
 
-      if (imageToRemove) {
-        URL.revokeObjectURL(imageToRemove.url);
+      if (imageToRemove?.preview) {
+        URL.revokeObjectURL(imageToRemove.preview);
       }
 
-      return currentImages.filter((image) => image.id !== id);
+      return previous.filter(
+        (_, index) => index !== indexToRemove
+      );
     });
 
     setAnalysisResult(null);
-    setAnalysisError("");
-  }
+    setError("");
+  };
 
-  function openFilePicker() {
-    fileInputRef.current?.click();
-  }
+  const handleAnalyze = async () => {
+    setError("");
+    setAnalysisResult(null);
 
-  async function startAnalysis() {
-    if (!crop || !growthStage || images.length === 0) {
+    if (!crop) {
+      setError("Please select a crop.");
+      return;
+    }
+
+    if (!growthStage) {
+      setError("Please select the crop growth stage.");
+      return;
+    }
+
+    if (images.length === 0) {
+      setError("Please upload at least one crop image.");
       return;
     }
 
     setIsAnalyzing(true);
-    setAnalysisResult(null);
-    setAnalysisError("");
 
     try {
       const result = await analyzeCrop({
@@ -135,69 +157,40 @@ function Diagnosis() {
         images,
       });
 
-      console.log("CropGuard analysis response:", result);
+      console.log("CropGuard AI response:", result);
 
       setAnalysisResult(result);
-    } catch (error) {
-      console.error("CropGuard analysis error:", error);
+    } catch (err) {
+      console.error("CropGuard analysis error:", err);
 
-      setAnalysisError(
-        error.message || "Unable to connect to the CropGuard backend."
+      setError(
+        err?.message ||
+          "Unable to analyze the crop. Please try again."
       );
     } finally {
       setIsAnalyzing(false);
     }
-  }
+  };
 
-  const hasWarning = qualityResults.some(
-    (result) => result.status === "warning"
-  );
-
-  const canAnalyze =
-    crop !== "" &&
-    growthStage !== "" &&
-    images.length > 0 &&
-    !hasWarning;
+  const predictions =
+    analysisResult?.ai_analysis?.predictions || [];
 
   return (
     <div className="diagnosis-page">
-      <section className="diagnosis-intro">
+      <div className="diagnosis-header">
         <div>
-          <span className="section-label">SMART CROP DIAGNOSIS</span>
-
           <h1>Check My Crop</h1>
-
           <p>
-            Give CropGuard a little context about your crop and upload clear
-            images. This information will be used together with environmental
-            intelligence for the diagnosis.
+            Upload crop images and let CropGuard analyze them
+            using the trained AI model.
           </p>
         </div>
+      </div>
 
-        <div className="diagnosis-step-indicator">
-          <span className="step-active">1</span>
-          <span className="step-line"></span>
-          <span>2</span>
-          <span className="step-line"></span>
-          <span>3</span>
-        </div>
-      </section>
-
-      <section className="diagnosis-card">
-        <div className="diagnosis-card-header">
-          <div>
-            <span className="section-label">STEP 1</span>
-            <h2>Tell us about your crop</h2>
-          </div>
-
-          <span className="diagnosis-number">01</span>
-        </div>
-
-        <div className="diagnosis-fields">
-          <div className="field-group">
-            <label htmlFor="crop">
-              Crop <span>*</span>
-            </label>
+      <div className="diagnosis-card">
+        <div className="form-grid">
+          <div className="form-group">
+            <label htmlFor="crop">Crop</label>
 
             <select
               id="crop"
@@ -205,12 +198,12 @@ function Diagnosis() {
               onChange={(event) => {
                 setCrop(event.target.value);
                 setAnalysisResult(null);
-                setAnalysisError("");
+                setError("");
               }}
             >
-              <option value="">Select your crop</option>
+              <option value="">Select crop</option>
 
-              {crops.map((cropName) => (
+              {CROPS.map((cropName) => (
                 <option key={cropName} value={cropName}>
                   {cropName}
                 </option>
@@ -218,9 +211,9 @@ function Diagnosis() {
             </select>
           </div>
 
-          <div className="field-group">
+          <div className="form-group">
             <label htmlFor="growth-stage">
-              Growth stage <span>*</span>
+              Growth Stage
             </label>
 
             <select
@@ -229,12 +222,12 @@ function Diagnosis() {
               onChange={(event) => {
                 setGrowthStage(event.target.value);
                 setAnalysisResult(null);
-                setAnalysisError("");
+                setError("");
               }}
             >
               <option value="">Select growth stage</option>
 
-              {growthStages.map((stage) => (
+              {GROWTH_STAGES.map((stage) => (
                 <option key={stage} value={stage}>
                   {stage}
                 </option>
@@ -242,264 +235,203 @@ function Diagnosis() {
             </select>
           </div>
         </div>
-      </section>
 
-      <section className="diagnosis-card">
-        <div className="diagnosis-card-header">
-          <div>
-            <span className="section-label">STEP 2</span>
-            <h2>Add crop images</h2>
+        <div className="upload-section">
+          <div className="upload-header">
+            <div>
+              <h2>Crop Images</h2>
+              <p>
+                Upload up to {MAX_IMAGES} clear crop images.
+              </p>
+            </div>
 
-            <p className="card-description">
-              Upload up to 5 images. Multiple views can help CropGuard
-              understand visible symptoms more reliably.
-            </p>
+            <span>
+              {images.length}/{MAX_IMAGES}
+            </span>
           </div>
 
-          <span className="image-count">{images.length} / 5</span>
-        </div>
+          <label className="upload-box">
+            <input
+              type="file"
+              accept="image/jpeg,image/png,image/webp"
+              multiple
+              onChange={handleImageUpload}
+            />
 
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept="image/*"
-          multiple
-          hidden
-          onChange={handleImageSelection}
-        />
-
-        {images.length === 0 ? (
-          <button
-            type="button"
-            className="upload-area"
-            onClick={openFilePicker}
-          >
-            <span className="upload-icon">↑</span>
+            <div className="upload-icon">+</div>
 
             <strong>Upload crop images</strong>
 
-            <span>Tap to choose photos from your device</span>
+            <span>
+              JPG, PNG or WebP • Maximum 10 MB each
+            </span>
+          </label>
 
-            <small>
-              JPG, PNG or other common image formats · Up to 5 images
-            </small>
-          </button>
-        ) : (
-          <>
-            <div className="image-grid">
-              {images.map((image, index) => {
-                const quality = qualityResults.find(
-                  (result) => result.id === image.id
-                );
-
-                return (
-                  <div className="image-preview-card" key={image.id}>
-                    <img
-                      src={image.url}
-                      alt={`Crop sample ${index + 1}`}
-                    />
-
-                    <div className="image-preview-overlay">
-                      <span>Image {index + 1}</span>
-
-                      <button
-                        type="button"
-                        onClick={() => removeImage(image.id)}
-                        aria-label={`Remove image ${index + 1}`}
-                      >
-                        ×
-                      </button>
-                    </div>
-
-                    {quality && (
-                      <div
-                        className={`quality-badge ${quality.status}`}
-                      >
-                        {quality.status === "good"
-                          ? "✓ Good"
-                          : "⚠ Check"}
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-
-              {images.length < 5 && (
-                <button
-                  type="button"
-                  className="add-more-image"
-                  onClick={openFilePicker}
+          {images.length > 0 && (
+            <div className="image-preview-grid">
+              {images.map((image, index) => (
+                <div
+                  className="image-preview-card"
+                  key={`${image.file.name}-${index}`}
                 >
-                  <span>+</span>
-                  <strong>Add another</strong>
-                  <small>
-                    {5 - images.length} slot
-                    {5 - images.length === 1 ? "" : "s"} remaining
-                  </small>
-                </button>
-              )}
-            </div>
+                  <img
+                    src={image.preview}
+                    alt={`Crop preview ${index + 1}`}
+                  />
 
-            {hasWarning && (
-              <div className="quality-warning">
-                <span>⚠</span>
+                  <button
+                    type="button"
+                    onClick={() => removeImage(index)}
+                  >
+                    ×
+                  </button>
 
-                <div>
-                  <strong>Image quality needs attention</strong>
-
-                  <p>
-                    One or more images may not be suitable for reliable
-                    analysis. Try uploading a clearer image.
-                  </p>
+                  <span>{image.file.name}</span>
                 </div>
-              </div>
-            )}
-          </>
-        )}
-      </section>
-
-      {images.length > 0 && (
-        <section className="diagnosis-card quality-card">
-          <div className="diagnosis-card-header">
-            <div>
-              <span className="section-label">STEP 3</span>
-              <h2>Review before analysis</h2>
-            </div>
-
-            <span className="review-icon">✓</span>
-          </div>
-
-          <div className="review-list">
-            <div className="review-row">
-              <span>Crop</span>
-              <strong>{crop || "Not selected"}</strong>
-            </div>
-
-            <div className="review-row">
-              <span>Growth stage</span>
-              <strong>{growthStage || "Not selected"}</strong>
-            </div>
-
-            <div className="review-row">
-              <span>Images</span>
-              <strong>
-                {images.length} image{images.length === 1 ? "" : "s"}
-              </strong>
-            </div>
-
-            <div className="review-row">
-              <span>Image quality</span>
-
-              <strong
-                className={hasWarning ? "warning-text" : "good-text"}
-              >
-                {hasWarning ? "Needs attention" : "Ready"}
-              </strong>
-            </div>
-          </div>
-
-          <button
-            type="button"
-            className="analyze-button"
-            disabled={!canAnalyze || isAnalyzing}
-            onClick={startAnalysis}
-          >
-            {isAnalyzing ? (
-              <>
-                <span className="loading-spinner"></span>
-                Sending to CropGuard...
-              </>
-            ) : (
-              <>
-                Analyze my crop
-                <span>→</span>
-              </>
-            )}
-          </button>
-
-          {!crop || !growthStage ? (
-            <p className="form-hint">
-              Select your crop and growth stage before starting analysis.
-            </p>
-          ) : hasWarning ? (
-            <p className="form-hint">
-              Please replace the image that needs attention before
-              analysis.
-            </p>
-          ) : null}
-
-          {analysisError && (
-            <div className="quality-warning">
-              <span>⚠</span>
-
-              <div>
-                <strong>Analysis request failed</strong>
-                <p>{analysisError}</p>
-              </div>
+              ))}
             </div>
           )}
+        </div>
 
-          {analysisResult && (
-            <div className="analysis-result">
-              <span className="section-label">CROPGUARD RESPONSE</span>
+        {error && (
+          <div className="diagnosis-error">
+            {error}
+          </div>
+        )}
 
-              <h3>Request received successfully ✓</h3>
+        <button
+          type="button"
+          className="analyze-button"
+          onClick={handleAnalyze}
+          disabled={isAnalyzing}
+        >
+          {isAnalyzing
+            ? "Analyzing with CropGuard AI..."
+            : "Analyze my crop →"}
+        </button>
+      </div>
+
+      {analysisResult && (
+        <div className="analysis-results">
+          <div className="results-header">
+            <div>
+              <h2>CropGuard AI Analysis</h2>
 
               <p>
-                Your crop information and image{" "}
-                {analysisResult.input?.image_count === 1
-                  ? "has"
-                  : "have"}{" "}
-                been successfully sent to the CropGuard backend.
-              </p>
-
-              <div className="review-list">
-                <div className="review-row">
-                  <span>Crop</span>
-                  <strong>
-                    {analysisResult.input?.crop || crop}
-                  </strong>
-                </div>
-
-                <div className="review-row">
-                  <span>Growth stage</span>
-                  <strong>
-                    {analysisResult.input?.growth_stage ||
-                      growthStage}
-                  </strong>
-                </div>
-
-                <div className="review-row">
-                  <span>Images received</span>
-                  <strong>
-                    {analysisResult.input?.image_count ??
-                      images.length}
-                  </strong>
-                </div>
-              </div>
-
-              <p className="form-hint">
-                AI disease and pest inference will be connected after
-                the trained model is integrated.
+                Analysis completed for{" "}
+                <strong>
+                  {analysisResult.input?.crop || crop}
+                </strong>{" "}
+                at the{" "}
+                <strong>
+                  {analysisResult.input?.growth_stage ||
+                    growthStage}
+                </strong>{" "}
+                stage.
               </p>
             </div>
-          )}
-        </section>
-      )}
 
-      <section className="diagnosis-info">
-        <div className="info-icon">✦</div>
+            <span className="result-status">
+              ✓ Completed
+            </span>
+          </div>
 
-        <div>
-          <strong>Why CropGuard asks for context</strong>
+          <div className="result-summary">
+            <div className="summary-item">
+              <span>Crop</span>
+              <strong>
+                {analysisResult.input?.crop || crop}
+              </strong>
+            </div>
 
-          <p>
-            The image is only one part of the assessment. CropGuard is
-            designed to combine crop condition with growth stage, weather,
-            location, historical intelligence and local reports.
-          </p>
+            <div className="summary-item">
+              <span>Growth stage</span>
+              <strong>
+                {analysisResult.input?.growth_stage ||
+                  growthStage}
+              </strong>
+            </div>
+
+            <div className="summary-item">
+              <span>Images analyzed</span>
+              <strong>
+                {analysisResult.input?.image_count ||
+                  images.length}
+              </strong>
+            </div>
+          </div>
+
+          <div className="prediction-section">
+            <h3>AI Prediction</h3>
+
+            {predictions.length === 0 ? (
+              <div className="no-prediction">
+                The AI model did not return a prediction.
+              </div>
+            ) : (
+              predictions.map((prediction, index) => (
+                <div
+                  className="prediction-card"
+                  key={`${prediction.class_name}-${index}`}
+                >
+                  <div className="prediction-main">
+                    <div>
+                      <span className="prediction-label">
+                        Model prediction
+                      </span>
+
+                      <h3>
+                        {prediction.condition ||
+                          "Unknown condition"}
+                      </h3>
+
+                      <p>
+                        Model crop:{" "}
+                        <strong>
+                          {prediction.crop || "Unknown"}
+                        </strong>
+                      </p>
+
+                      <p>
+                        Type:{" "}
+                        <strong>
+                          {prediction.condition_type ||
+                            "Unknown"}
+                        </strong>
+                      </p>
+                    </div>
+
+                    <div className="confidence-box">
+                      <span>Model confidence</span>
+
+                      <strong>
+                        {prediction.confidence_percent}%
+                      </strong>
+                    </div>
+                  </div>
+
+                  <div className="prediction-class">
+                    Model class:{" "}
+                    <code>
+                      {prediction.class_name}
+                    </code>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+
+          <div className="ai-disclaimer">
+            <strong>Important:</strong> This is the output
+            of the trained CropGuard AI model. Model
+            confidence is not the same as guaranteed
+            real-world field diagnosis. CropGuard should
+            consider crop context, image quality, weather,
+            location and expert validation before making
+            field-level recommendations.
+          </div>
         </div>
-      </section>
+      )}
     </div>
   );
 }
