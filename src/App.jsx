@@ -1,106 +1,48 @@
-import "./App.css";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import React from "react";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 
 import Sidebar from "./components/Sidebar";
-import Header from "./components/Header";
-
 import Dashboard from "./pages/Dashboard";
 import Diagnosis from "./pages/Diagnosis";
 import Risk from "./pages/Risk";
+import LocalHealth from "./pages/LocalHealth";
+import ReportOutbreak from "./pages/ReportOutbreak";
 import Weather from "./pages/Weather";
-
-function PlaceholderPage({ title, description }) {
-  return (
-    <div className="placeholder-page">
-      <div className="placeholder-icon">✦</div>
-
-      <span className="section-label">CROPGUARD</span>
-
-      <h1>{title}</h1>
-
-      <p>{description}</p>
-
-      <span className="coming-badge">
-        Module ready for development
-      </span>
-    </div>
-  );
-}
+import CropHealth from "./pages/CropHealth";
+import Login from "./pages/Login";
+import Profile from "./pages/Profile";
 
 function App() {
   return (
-    <BrowserRouter>
-      <div className="app-shell">
-        <Sidebar />
+    <Router>
+      <Routes>
+        {/* Login */}
+        <Route path="/login" element={<Login />} />
 
-        <div className="main-area">
-          <Header />
+        {/* Main application */}
+        <Route
+          path="/*"
+          element={
+            <div className="app-container">
+              <Sidebar />
 
-          <main className="page-content">
-            <Routes>
-              <Route path="/" element={<Dashboard />} />
-
-              <Route
-                path="/diagnosis"
-                element={<Diagnosis />}
-              />
-
-              <Route
-                path="/risk"
-                element={<Risk />}
-              />
-
-              <Route
-                path="/local-health"
-                element={
-                  <PlaceholderPage
-                    title="Local Crop Health"
-                    description="Community reports, disease hotspots and regional crop-health intelligence will appear here."
-                  />
-                }
-              />
-
-              <Route
-                path="/assistant"
-                element={
-                  <PlaceholderPage
-                    title="Ask CropGuard"
-                    description="The intelligent agriculture assistant will provide crop-health guidance here."
-                  />
-                }
-              />
-
-              <Route
-  path="/weather"
-  element={<Weather />}
-/>
-                
-            
-
-              <Route
-                path="/alerts"
-                element={
-                  <PlaceholderPage
-                    title="Alerts"
-                    description="Smart crop-health alerts and early warnings will appear here."
-                  />
-                }
-              />
-
-              <Route
-                path="/crop-health"
-                element={
-                  <PlaceholderPage
-                    title="Crop Health"
-                    description="Diagnosis history, crop-health timeline and follow-up monitoring will appear here."
-                  />
-                }
-              />
-            </Routes>
-          </main>
-        </div>
-      </div>
-    </BrowserRouter>
+              <main className="main-content">
+                <Routes>
+                  <Route path="/" element={<Dashboard />} />
+                  <Route path="/diagnosis" element={<Diagnosis />} />
+                  <Route path="/risk" element={<Risk />} />
+                  <Route path="/local-health" element={<LocalHealth />} />
+                  <Route path="/report" element={<ReportOutbreak />} />
+                  <Route path="/weather" element={<Weather />} />
+                  <Route path="/crop-health" element={<CropHealth />} />
+                  <Route path="/profile" element={<Profile />} />
+                </Routes>
+              </main>
+            </div>
+          }
+        />
+      </Routes>
+    </Router>
   );
 }
 

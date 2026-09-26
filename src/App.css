@@ -1160,3 +1160,208 @@
     min-height: 94px;
   }
 }
+
+/* =========================================================
+   CHECK MY RISK PAGE
+   ========================================================= */
+
+.risk-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(300px, 0.65fr);
+  gap: 20px;
+  align-items: start;
+}
+
+.clean-card {
+  padding: 26px;
+  border: 1px solid #dce7df;
+  border-radius: 18px;
+  background: #ffffff;
+  box-shadow: 0 4px 18px rgba(25, 55, 35, 0.04);
+}
+
+.risk-grid .clean-card + .clean-card {
+  margin-top: 18px;
+}
+
+/* Risk page headings */
+
+.risk-grid h2 {
+  margin-top: 6px;
+  color: #17382e;
+  font-family: "Manrope", sans-serif;
+  font-size: 25px;
+  font-weight: 800;
+  letter-spacing: -0.6px;
+}
+
+.risk-grid h3 {
+  margin-top: 0;
+  color: #17382e;
+  font-family: "Manrope", sans-serif;
+  font-size: 18px;
+  font-weight: 800;
+}
+
+/* Form */
+
+.risk-grid .form-group {
+  margin-bottom: 18px;
+}
+
+.risk-grid .form-group label {
+  display: block;
+  margin-bottom: 7px;
+  color: #29453a;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.risk-grid .form-group select,
+.risk-grid .form-group input,
+.risk-grid .form-group textarea {
+  width: 100%;
+  box-sizing: border-box;
+
+  border: 1px solid #cfdcd4;
+  border-radius: 9px;
+
+  background: #ffffff;
+  color: #263d34;
+
+  font-family: inherit;
+  font-size: 13px;
+
+  outline: none;
+
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.risk-grid .form-group select,
+.risk-grid .form-group input {
+  height: 45px;
+  padding: 0 12px;
+}
+
+.risk-grid .form-group textarea {
+  min-height: 90px;
+  padding: 11px 12px;
+  resize: vertical;
+  line-height: 1.5;
+}
+
+.risk-grid .form-group select:focus,
+.risk-grid .form-group input:focus,
+.risk-grid .form-group textarea:focus {
+  border-color: #4f8f68;
+  box-shadow: 0 0 0 3px rgba(79, 143, 104, 0.10);
+}
+
+.risk-grid .form-group textarea::placeholder,
+.risk-grid .form-group input::placeholder {
+  color: #91a199;
+}
+
+/* Main button */
+
+.risk-grid .btn-primary {
+  min-height: 45px;
+  padding: 0 22px;
+
+  border: 0;
+  border-radius: 9px;
+
+  background: #245c3b;
+  color: #ffffff;
+
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 700;
+
+  cursor: pointer;
+
+  transition:
+    background 0.2s ease,
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.risk-grid .btn-primary:hover {
+  background: #1c4b30;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 15px rgba(36, 92, 59, 0.16);
+}
+
+.risk-grid .btn-primary:active {
+  transform: translateY(0);
+}
+
+/* How it works */
+
+.risk-grid .clean-card p {
+  line-height: 1.6;
+}
+
+.risk-grid .clean-card strong {
+  color: #29483b;
+  font-size: 13px;
+}
+
+/* Risk result */
+
+.risk-grid .clean-card[style*="border-left"] {
+  box-shadow: 0 4px 16px rgba(120, 100, 20, 0.06);
+}
+
+/* =========================================================
+   TABLET
+   ========================================================= */
+
+@media (max-width: 1000px) {
+  .risk-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* =========================================================
+   MOBILE
+   ========================================================= */
+
+@media (max-width: 850px) {
+  .risk-grid {
+    width: 100%;
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .clean-card {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 20px 17px;
+    border-radius: 15px;
+  }
+
+  .risk-grid h2 {
+    font-size: 22px;
+  }
+
+  .risk-grid h3 {
+    font-size: 17px;
+  }
+
+  .risk-grid .btn-primary {
+    width: 100%;
+  }
+}
+
+@media (max-width: 420px) {
+  .clean-card {
+    padding: 18px 15px;
+  }
+
+  .risk-grid h2 {
+    font-size: 20px;
+  }
+}

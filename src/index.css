@@ -1,54 +1,48 @@
-@import url("https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap");
+@import 'leaflet/dist/leaflet.css';
 
 :root {
-  font-family: "DM Sans", -apple-system, BlinkMacSystemFont, "Segoe UI",
-    sans-serif;
-  color: #17221a;
-  background: #f4f7f3;
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-
-  --green-950: #102718;
-  --green-900: #16351f;
-  --green-800: #1d4729;
-  --green-700: #286238;
-  --green-600: #34804a;
-  --green-500: #4d9b5e;
-  --green-100: #e4f2e6;
-  --green-50: #f0f8f1;
-
-  --text-main: #17221a;
-  --text-secondary: #68746b;
-  --text-muted: #8b958d;
-
-  --background: #f4f7f3;
-  --card: #ffffff;
-  --border: #e5ebe5;
-
-  --warning: #d28b25;
-  --warning-bg: #fff6e7;
-  --danger: #c84d4d;
-  --danger-bg: #fff0f0;
-
-  --sidebar-width: 250px;
-  --header-height: 82px;
+  --primary-green: #1b4332;
+  --mid-green: #2d6a4f;
+  --accent-green: #52b788;
+  --light-green: #d8f3dc;
+  --bg-color: #f4f9f5;
+  --surface: #ffffff;
+  --text-dark: #1a2e26;
+  --text-muted: #52655d;
+  --border-color: #d1e2d7;
+  --sidebar-width: 260px;
 }
+
+/* =========================================================
+   GLOBAL
+   ========================================================= */
 
 * {
   box-sizing: border-box;
+  margin: 0;
+  padding: 0;
 }
 
 html {
-  min-height: 100%;
+  font-size: 16px;
+  -webkit-text-size-adjust: 100%;
 }
 
 body {
-  margin: 0;
+  font-family:
+    Inter,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    Roboto,
+    Helvetica,
+    Arial,
+    sans-serif;
+
+  background-color: var(--bg-color);
+  color: var(--text-dark);
+  line-height: 1.5;
   min-width: 320px;
-  min-height: 100vh;
-  background: var(--background);
-  color: var(--text-main);
 }
 
 button,
@@ -59,14 +53,473 @@ textarea {
 }
 
 button {
-  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
 }
 
-a {
-  color: inherit;
-  text-decoration: none;
+img {
+  max-width: 100%;
+  height: auto;
 }
 
-#root {
+/* =========================================================
+   APP LAYOUT
+   ========================================================= */
+
+.app-container {
+  display: flex;
   min-height: 100vh;
+}
+
+/* =========================================================
+   SIDEBAR
+   ========================================================= */
+
+.sidebar {
+  width: var(--sidebar-width);
+  background: linear-gradient(
+    180deg,
+    var(--primary-green) 0%,
+    var(--mid-green) 100%
+  );
+
+  color: #ffffff;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+
+  padding: 24px 16px;
+
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+
+  z-index: 1000;
+
+  box-shadow: 4px 0 15px rgba(0, 0, 0, 0.08);
+
+  transition: transform 0.25s ease;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  margin-bottom: 32px;
+  padding: 0 8px;
+}
+
+.brand-mark {
+  background: var(--accent-green);
+  color: var(--primary-green);
+
+  font-weight: 800;
+  font-size: 18px;
+
+  padding: 8px 12px;
+  border-radius: 8px;
+
+  flex-shrink: 0;
+}
+
+.brand h2 {
+  font-size: 20px;
+  letter-spacing: -0.5px;
+  color: #ffffff;
+}
+
+.sidebar-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.nav-heading {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+
+  color: var(--accent-green);
+
+  margin: 12px 0 6px 12px;
+
+  font-weight: 700;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  padding: 12px 14px;
+
+  color: #b7e4c7;
+  text-decoration: none;
+
+  border-radius: 8px;
+
+  font-size: 14px;
+  font-weight: 500;
+
+  transition:
+    background 0.2s ease,
+    color 0.2s ease;
+}
+
+.nav-item:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+}
+
+.nav-item.active {
+  background: var(--accent-green);
+  color: var(--primary-green);
+  font-weight: 700;
+}
+
+.nav-icon {
+  width: 22px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+/* =========================================================
+   MOBILE MENU CONTROLS
+   ========================================================= */
+
+.mobile-menu-button,
+.mobile-close-button,
+.sidebar-overlay {
+  display: none;
+}
+
+/* =========================================================
+   MAIN CONTENT
+   ========================================================= */
+
+.main-content {
+  margin-left: var(--sidebar-width);
+
+  flex: 1;
+
+  padding: 32px;
+
+  width: calc(100% - var(--sidebar-width));
+  max-width: 1400px;
+}
+
+/* =========================================================
+   CARDS
+   ========================================================= */
+
+.clean-card {
+  background: var(--surface);
+
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+
+  padding: 24px;
+  margin-top: 20px;
+
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+}
+
+/* =========================================================
+   BUTTONS
+   ========================================================= */
+
+.btn-primary {
+  background-color: var(--mid-green);
+  color: #ffffff;
+
+  border: none;
+
+  padding: 10px 18px;
+
+  border-radius: 8px;
+
+  font-weight: 600;
+
+  cursor: pointer;
+
+  transition: background-color 0.2s;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  gap: 8px;
+
+  min-height: 42px;
+}
+
+.btn-primary:hover {
+  background-color: var(--primary-green);
+}
+
+/* =========================================================
+   FORM ELEMENTS
+   ========================================================= */
+
+.input-field,
+.select-field,
+input,
+select,
+textarea {
+  max-width: 100%;
+}
+
+.input-field,
+.select-field {
+  width: 100%;
+
+  padding: 10px 14px;
+
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+
+  margin-top: 6px;
+  margin-bottom: 16px;
+
+  background-color: #ffffff;
+  color: var(--text-dark);
+}
+
+/* =========================================================
+   TABLET
+   ========================================================= */
+
+@media (max-width: 900px) {
+  :root {
+    --sidebar-width: 230px;
+  }
+
+  .main-content {
+    padding: 24px;
+  }
+
+  .clean-card {
+    padding: 20px;
+  }
+}
+
+/* =========================================================
+   MOBILE
+   ========================================================= */
+
+@media (max-width: 768px) {
+
+  body {
+    font-size: 15px;
+    overflow-x: hidden;
+  }
+
+  /* -------------------------------------------------------
+     Sidebar becomes off-canvas
+     ------------------------------------------------------- */
+
+  .sidebar {
+    width: min(82vw, 300px);
+
+    transform: translateX(-105%);
+
+    padding: 20px 14px;
+
+    box-shadow: 8px 0 30px rgba(0, 0, 0, 0.2);
+  }
+
+  .sidebar.sidebar-open {
+    transform: translateX(0);
+  }
+
+  /* -------------------------------------------------------
+     Hamburger
+     ------------------------------------------------------- */
+
+  .mobile-menu-button {
+    display: flex;
+
+    position: fixed;
+
+    top: 14px;
+    left: 14px;
+
+    width: 44px;
+    height: 44px;
+
+    border: none;
+    border-radius: 10px;
+
+    background: var(--primary-green);
+    color: #ffffff;
+
+    z-index: 1100;
+
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    gap: 5px;
+
+    cursor: pointer;
+
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  }
+
+  .mobile-menu-button span {
+    width: 20px;
+    height: 2px;
+
+    background: #ffffff;
+
+    border-radius: 2px;
+  }
+
+  /* -------------------------------------------------------
+     Close button
+     ------------------------------------------------------- */
+
+  .mobile-close-button {
+    display: flex;
+
+    margin-left: auto;
+
+    width: 36px;
+    height: 36px;
+
+    border: none;
+    border-radius: 8px;
+
+    background: rgba(255, 255, 255, 0.12);
+
+    color: #ffffff;
+
+    font-size: 25px;
+    line-height: 1;
+
+    align-items: center;
+    justify-content: center;
+
+    cursor: pointer;
+  }
+
+  /* -------------------------------------------------------
+     Overlay
+     ------------------------------------------------------- */
+
+  .sidebar-overlay {
+    display: block;
+
+    position: fixed;
+
+    inset: 0;
+
+    background: rgba(0, 0, 0, 0.45);
+
+    z-index: 999;
+
+    backdrop-filter: blur(2px);
+  }
+
+  /* -------------------------------------------------------
+     Main content
+     ------------------------------------------------------- */
+
+  .app-container {
+    display: block;
+    min-height: 100vh;
+  }
+
+  .main-content {
+    margin-left: 0;
+
+    width: 100%;
+
+    max-width: none;
+
+    padding: 76px 16px 24px;
+  }
+
+  /* -------------------------------------------------------
+     Cards
+     ------------------------------------------------------- */
+
+  .clean-card {
+    padding: 16px;
+
+    border-radius: 12px;
+
+    margin-top: 16px;
+  }
+
+  /* -------------------------------------------------------
+     Typography
+     ------------------------------------------------------- */
+
+  h1 {
+    font-size: clamp(24px, 7vw, 32px);
+    line-height: 1.2;
+  }
+
+  h2 {
+    font-size: clamp(20px, 6vw, 26px);
+  }
+
+  h3 {
+    font-size: clamp(17px, 5vw, 21px);
+  }
+
+  p {
+    font-size: 14px;
+  }
+
+  /* -------------------------------------------------------
+     Buttons
+     ------------------------------------------------------- */
+
+  .btn-primary {
+    width: 100%;
+    min-height: 44px;
+  }
+
+  /* -------------------------------------------------------
+     Forms
+     ------------------------------------------------------- */
+
+  input,
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
+
+  /* -------------------------------------------------------
+     Navigation
+     ------------------------------------------------------- */
+
+  .nav-item {
+    min-height: 46px;
+    font-size: 15px;
+    padding: 11px 12px;
+  }
+}
+
+/* =========================================================
+   SMALL PHONES
+   ========================================================= */
+
+@media (max-width: 480px) {
+
+  .main-content {
+    padding: 70px 12px 20px;
+  }
+
+  .clean-card {
+    padding: 14px;
+  }
+
+  .mobile-menu-button {
+    top: 12px;
+    left: 12px;
+  }
 }
